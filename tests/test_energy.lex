@@ -31,7 +31,26 @@ fn test_a2a_inbox_different_ids() -> Result[Unit, Str] {
   assert_true(energy.a2a_inbox("v2g-depot-north") == "http://localhost:8100/agents/v2g-depot-north/", "a2a_inbox must use the given id, not a fixed one")
 }
 
-fn run_all() -> List[Result[Unit, Str]] {
+fn run_all_results() -> List[Result[Unit, Str]] {
   [test_a2a_inbox_shape(), test_a2a_inbox_different_ids()]
+}
+
+# `lex test` calls `run_all` and DISCARDS what it returns (lex-lang#757), so a
+# returned failure count reports `ok` however many assertions failed. Only a
+# raise fails a file — the same idiom lex-ems, lex-web and lex-guard use.
+# Run `run_all_results` directly to see which assertions failed.
+fn run_all() -> Unit {
+  let failures := list.fold(run_all_results(), 0, fn (n :: Int, r :: Result[Unit, Str]) -> Int {
+    match r {
+      Ok(_) => n,
+      Err(_) => n + 1,
+    }
+  })
+  if failures == 0 {
+    ()
+  } else {
+    let __boom := 1 / 0
+    ()
+  }
 }
 
